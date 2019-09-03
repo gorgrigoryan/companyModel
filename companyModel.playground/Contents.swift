@@ -3,6 +3,12 @@ class Company {
     var name: String
     var employees = [Employee]()
     var teams = [Team]()
+    static var count = 0
+    
+    init(name: String) {
+        Company.count += 1
+        self.name = name
+    }
     
     func register(employee: Employee, team: Team) {
         team.add(member: employee)
@@ -17,57 +23,101 @@ class Company {
         teams.append(newTeam)
     }
     
-    init(name: String) {
-        self.name = name
+    deinit {
+        Company.count -= 1
     }
 }
 
 class Employee {
-    enum Gender {
-        case man
-        case woman
-        case other
+    enum Gender: String {
+        case man = "Man"
+        case woman = "Woman"
+        case other = "Other"
     }
+    static var count = 0
     var name: String
     var gender: Gender
-    var team: Team?
-    var description : CustomStringConvertible {
-        return ""
+    weak var team: Team?
+    
+    var description: CustomStringConvertible {
+        var description = "Name: " + name + ", Gender: "
+        
+        if let team = team {
+            description += ", Team: " + team.name
+        }
+        
+        return description
     }
     
     init(name: String, gender: Gender) {
+        Employee.count += 1
         self.name = name
         self.gender = gender
+    }
+    
+    deinit {
+        Employee.count -= 1
     }
 }
 
 class Developer: Employee {
-    enum Platform {
-        case iOS
-        case Android
-        case Web
-        case Windows
+    enum Platform: String {
+        case iOS = "iOS"
+        case Android = "Android"
+        case Web = "Web"
+        case Windows = "Windows?"
     }
     var platform: Platform?
     
-    func develop() {
-        
+    override var description: CustomStringConvertible {
+        var description = "Name: " + name + ", Gender: " + gender.rawValue + ", Profession: "
+            + platform!.rawValue + " Developer"
+
+        if let team = team {
+            description += ", Team: " + team.name
+        }
+
+        return description
     }
     
     convenience init(name: String, gender: Gender, platform: Platform) {
         self.init(name: name, gender: gender)
         self.platform = platform
     }
+    
+    func develop() {
+        print("Developing", platform!.rawValue)
+    }
 }
 
 class Designer: Employee {
-    func design() {
+    override var description: CustomStringConvertible {
+        var description = "Name: " + name + ", Gender: " + gender.rawValue + ", Profession: Designer"
         
+        if let team = team {
+            description += ", Team: " + team.name
+        }
+        
+        return description
+    }
+    
+    func design() {
+        print("I am designer")
     }
 }
 
 class ProductManager: Employee {
     var project: String?
+    
+    override var description: CustomStringConvertible {
+        var description = "Name: " + name + ", Gender: " + gender.rawValue + ", Profession: Product manager"
+        
+        if let team = team {
+            description += ", Team: " + team.name
+        }
+        
+        return description
+    }
     
     convenience init(name: String, gender: Gender, project: String) {
         self.init(name: name, gender: gender)
@@ -75,18 +125,19 @@ class ProductManager: Employee {
     }
     
     func manage(project: String) {
-        
+        print("Managing", project)
     }
 }
 
 class Team {
-    enum TeamMemberType : Hashable, CaseIterable {
+    enum EmployeeType : Hashable, CaseIterable {
         case productManager
         case designer
         case developer
     }
+    static var count = 0
     var name: String
-    var members: [TeamMemberType:[Employee]] = [:]
+    var members: [EmployeeType:[Employee]] = [:]
     
     func add(member: Employee) {
         switch member {
@@ -105,11 +156,17 @@ class Team {
     }
     
     init(name: String) {
+        Team.count += 1
         self.name = name
         
-        for teamMember in TeamMemberType.allCases {
+        for teamMember in EmployeeType.allCases {
             members[teamMember] = []
         }
+    }
+    
+    deinit {
+        
+        Team.count -= 1
     }
 }
 var company: Company? = Company(name: "Monster Inc.")
@@ -139,9 +196,18 @@ company!.createTeam(name: "Dream Feed", members: [pete, henry, bile, flint, need
 
 print("Employees: ")
 for employee in company!.employees {
-    print(employee.name)
+    print(employee.name, ", Team: ", employee.team!.name)
 }
 print("\nTeams: ")
 for team in company!.teams {
     print(team.name)
+    for teamMember in Team.EmployeeType.allCases {
+        print(team.members[teamMember]!.count)
+    }
 }
+
+company = nil
+
+print(Company.count)
+print(Employee.count)
+print(Team.count)
