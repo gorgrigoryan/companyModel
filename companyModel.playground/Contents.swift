@@ -1,4 +1,3 @@
-
 class Company {
     var name: String
     var employees = [Employee]()
@@ -18,7 +17,7 @@ class Company {
         let newTeam = Team(name: name)
         for member in members {
             employees.append(member)
-            newTeam.add(member: member)
+            register(employee: member, team: newTeam)
         }
         teams.append(newTeam)
     }
@@ -56,6 +55,7 @@ class Employee {
     }
     
     deinit {
+        print("Employee \(name) deinitialized")
         Employee.count -= 1
     }
 }
@@ -139,22 +139,6 @@ class Team {
     var name: String
     var members: [EmployeeType:[Employee]] = [:]
     
-    func add(member: Employee) {
-        switch member {
-        case is Developer:
-            members[.developer]?.append(member)
-            member.team = self
-        case is Designer:
-            members[.designer]?.append(member)
-            member.team = self
-        case is ProductManager:
-            members[.productManager]?.append(member)
-            member.team = self
-        default:
-            break
-        }
-    }
-    
     init(name: String) {
         Team.count += 1
         self.name = name
@@ -164,45 +148,74 @@ class Team {
         }
     }
     
+    func add(member: Employee) {
+        switch member {
+        case is Developer:
+            members[.developer]!.append(member)
+            member.team = self
+        case is Designer:
+            members[.designer]!.append(member)
+            member.team = self
+        case is ProductManager:
+            members[.productManager]!.append(member)
+            member.team = self
+        default:
+            break
+        }
+    }
+    
     deinit {
-        
+        print("Team \(name) deinitialized")
         Team.count -= 1
     }
 }
 var company: Company? = Company(name: "Monster Inc.")
 
-var roz = ProductManager(name: "Roz", gender: .woman, project: "Profile photo")
-var boo = Designer(name: "Boo", gender: .other)
-var james = Developer(name: "James", gender: .man, platform: .iOS)
-var mike = Developer(name: "Mike", gender: .man, platform: .Android)
-company!.createTeam(name: "Dream Profile", members: [roz, boo, james, mike])
+company!.createTeam(name: "Dream Profile", members: [
+    ProductManager(name: "Roz", gender: .woman, project: "Profile photo"),
+    Designer(name: "Boo", gender: .other),
+    Developer(name: "James", gender: .man, platform: .iOS),
+    Developer(name: "Mike", gender: .man, platform: .Android)
+])
 
-var randall = ProductManager(name: "Randall", gender: .man, project: "Profile settings")
-var steve = ProductManager(name: "Steve", gender: .man, project: "Account settings")
-var jony = Designer(name: "Jony", gender: .man)
-var celia = Designer(name: "Celia", gender: .woman)
-var fungus = Developer(name: "Fungus", gender: .other, platform: .Web)
-var rex = Developer(name: "Rex", gender: .other, platform: .iOS)
-var woodie = Developer(name: "Woodie", gender: .man, platform: .Android)
-company!.createTeam(name: "Dream Settings", members: [randall, steve, jony, celia, fungus, rex, woodie])
+company!.createTeam(name: "Dream Settings", members: [
+    ProductManager(name: "Randall", gender: .man, project: "Profile settings"),
+    ProductManager(name: "Steve", gender: .man, project: "Account settings"),
+    Designer(name: "Jony", gender: .man),
+    Designer(name: "Celia", gender: .woman),
+    Developer(name: "Fungus", gender: .other, platform: .Web),
+    Developer(name: "Rex", gender: .other, platform: .iOS),
+    Developer(name: "Woodie", gender: .man, platform: .Android)
+])
 
-var pete = ProductManager(name: "Pete", gender: .man, project: "Feedbacks classification")
-var henry = ProductManager(name: "Henry", gender: .man, project: "Feedbacks")
-var bile = Designer(name: "Bile", gender: .man)
-var flint = Developer(name: "Flint", gender: .man)
-var needleman = Developer(name: "Needleman", gender: .other)
-var buzz = Developer(name: "Buzz", gender: .man)
-company!.createTeam(name: "Dream Feed", members: [pete, henry, bile, flint, needleman, buzz])
+company!.createTeam(name: "Dream Feed", members: [
+    ProductManager(name: "Pete", gender: .man, project: "Feedbacks classification"),
+    ProductManager(name: "Henry", gender: .man, project: "Feedbacks"),
+    Designer(name: "Bile", gender: .man),
+    Developer(name: "Flint", gender: .man),
+    Developer(name: "Needleman", gender: .other),
+    Developer(name: "Buzz", gender: .man)
+])
 
-print("Employees: ")
+print("Employees of company \(company!.name):")
+var counter = 1
 for employee in company!.employees {
-    print(employee.name, ", Team: ", employee.team!.name)
+    print("Employee \(counter):", employee.name, ", Team: ", employee.team!.name)
+    counter += 1
 }
-print("\nTeams: ")
+
+print("\nTeams of company \(company!.name):")
 for team in company!.teams {
-    print(team.name)
+    print(team.name, "Team")
     for teamMember in Team.EmployeeType.allCases {
-        print(team.members[teamMember]!.count)
+        switch teamMember {
+        case .designer:
+            print("Designers:", team.members[teamMember]!.count)
+        case .developer:
+            print("Developers:", team.members[teamMember]!.count)
+        case .productManager:
+            print("Product Managers:", team.members[teamMember]!.count)
+        }
     }
 }
 
